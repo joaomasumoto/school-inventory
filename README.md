@@ -69,6 +69,40 @@ Its movement records form its location history, avoiding the need to store a sep
 
 Origins and destinations may be absent depending on the movement type. For example, an asset entering the school from an external source has no internal origin, while an asset permanently leaving the school has no internal destination.
 
+## Domain Decisions
+
+### Asset Status
+
+The asset status classification was based on the terminology used in the
+school inventory process, with some adaptations to better represent the
+requirements of a continuously managed inventory.
+
+The current statuses are:
+
+- `OPERATING`: the asset is functional and available for use.
+- `UNDER_MAINTENANCE`: the asset is currently undergoing maintenance or repair.
+- `IDLE`: the asset is not currently in use, regardless of whether it remains functional.
+- `UNUSABLE`: the asset is no longer in suitable condition for use.
+- `LOANED`: the asset has temporarily left the school's control through a loan.
+- `DISCARDED`: the asset has permanently left the active inventory after disposal.
+
+Some classifications from the original inventory process were intentionally
+not represented as separate statuses:
+
+- **Obsolete:** obsolescence does not necessarily determine the asset's current
+  operational situation. An obsolete asset may still be in use (`OPERATING`)
+  or may be unused while awaiting a future decision (`IDLE`).
+- **Unserviceable / unsuitable for use:** classifications with equivalent
+  behavior in the scope of this application were consolidated into `UNUSABLE`
+  to avoid distinctions that would not affect the system's behavior.
+
+`LOANED` and `DISCARDED` were added to support the continuous tracking of
+assets beyond the periodic inventory process.
+
+These statuses represent the asset's current administrative situation.
+They are independent from movement types, which represent events in the
+asset's location history.
+
 ## Business Rules
 
 The following rules describe the intended domain behavior and are not yet enforced by the implementation:
@@ -103,7 +137,7 @@ PostgreSQL connectivity and JPA mappings are not yet configured.
 
 The project is currently in the domain modeling and initial implementation stage.
 
-The repository contains the Spring Boot application skeleton, initial `Asset`, `Location` and `AssetMovement` classes, and placeholder enums for acquisition methods, asset statuses and movement types. REST endpoints, persistence mappings and business rule validation are still to be implemented.
+The repository contains the Spring Boot application skeleton, initial `Asset`, `Location` and `AssetMovement` classes, and enums with defined values for acquisition methods, asset statuses and movement types. REST endpoints, persistence mappings and business rule validation are still to be implemented.
 
 The first version will focus on a small REST API before introducing additional infrastructure and tooling.
 
