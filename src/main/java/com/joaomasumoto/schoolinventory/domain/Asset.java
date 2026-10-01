@@ -2,19 +2,42 @@ package com.joaomasumoto.schoolinventory.domain;
 
 import com.joaomasumoto.schoolinventory.domain.enums.AcquisitionMethod;
 import com.joaomasumoto.schoolinventory.domain.enums.AssetStatus;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "assets")
 public class Asset {
 
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 50)
     private String name;
+
     private LocalDate entryDate;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private AcquisitionMethod acquisitionMethod;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private AssetStatus status;
+
     private String notes;
+
+    @Column(unique = true)
     private String assetNumber;
+
     private String documentNumber;
+
+
+    protected Asset() {
+
+    }
 
     public Asset(String name, AcquisitionMethod acquisitionMethod, AssetStatus status) {
         this.name = name;
@@ -22,7 +45,7 @@ public class Asset {
         this.status = status;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
