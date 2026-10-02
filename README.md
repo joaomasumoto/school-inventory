@@ -19,9 +19,9 @@ It focuses on movable physical assets managed by administrative and management s
 
 🚧 **Under development** — domain modeling and initial persistence mapping.
 
-The project contains the initial `Asset`, `Location` and `AssetMovement` classes and domain enums. `Asset` includes a constructor, getters and JPA mapping for generated IDs, required fields, string enums and unique asset numbers.
+The project contains JPA mappings for `Asset`, `Location` and `AssetMovement`, including generated IDs, field constraints and movement relationships. Movement creation validates required data and the origin/destination combination for each movement type.
 
-Database connectivity, relationship mappings, REST endpoints and business rule validation are still to be implemented. The application is being developed incrementally to explore domain modeling, testing and backend engineering decisions.
+Database connectivity, REST endpoints and the remaining lifecycle rules are still to be implemented. The application is being developed incrementally to explore domain modeling, testing and backend engineering decisions.
 
 ## Documentation
 

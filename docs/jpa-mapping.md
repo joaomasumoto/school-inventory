@@ -87,7 +87,7 @@ The current `notes` field uses the default string mapping; no long-text column o
 
 The project contains domain enums such as `AssetStatus`, `AcquisitionMethod` and `MovementType`.
 
-The currently mapped enums in `Asset` (`AssetStatus` and `AcquisitionMethod`) use `@Enumerated(EnumType.STRING)`. `MovementType` belongs to `AssetMovement`, whose persistence mapping has not yet been added.
+The currently mapped enums in `Asset` (`AssetStatus` and `AcquisitionMethod`) use `@Enumerated(EnumType.STRING)`. `MovementType` is also mapped as a string in `AssetMovement`, where it is required.
 
 ```java
 @Column(nullable = false)
@@ -160,4 +160,30 @@ The protected empty constructor exists for persistence purposes and is not inten
 - Database constraints reflect rules already identified in the domain instead of defining arbitrary restrictions.
 - JPA requirements should not weaken the domain model unnecessarily.
 
-Only `Asset` is currently mapped as an entity. Database connectivity and schema setup are pending, so compilation alone does not verify persistence against a running database. As the project evolves, relationship mappings between `Asset`, `AssetMovement` and `Location` will be added.
+All three domain classes are now mapped as entities. Database connectivity and schema setup are pending, so compilation alone does not verify persistence against a running database.
+
+## Location Mapping
+
+`Location` is an entity with a generated `Long` ID using `IDENTITY`. Its name is mapped with `@Column(nullable = false, unique = true, length = 50)`: the schema should require a name of at most 50 characters and prevent duplicate names.
+
+A protected no-argument constructor supports JPA; the public `Location(String name)` constructor and getters support application code without public setters. The constructor does not yet validate null, blank or overlong names. Uniqueness requires the corresponding database constraint.
+
+## Asset Movement Mapping
+
+`AssetMovement` has a generated `Long` ID, a required movement type stored with `EnumType.STRING`, a required date and optional notes. Both `Location` and `AssetMovement` use implicit table naming because neither declares `@Table`.
+
+The movement owns three unidirectional relationships:
+
+| Field | Mapping | Join column | Required |
+| --- | --- | --- | --- |
+| `asset` | `@ManyToOne(fetch = FetchType.LAZY, optional = false)` | `asset_id` | Yes (`nullable = false`) |
+| `origin` | `@ManyToOne(fetch = FetchType.LAZY)` | `origin_location_id` | No |
+| `destination` | `@ManyToOne(fetch = FetchType.LAZY)` | `destination_location_id` | No |
+
+Many movements can reference the same asset or location. No inverse collections or cascade operations are configured. Referenced assets and locations must be persisted separately before a movement referencing them is stored.
+
+The associations request lazy loading. Code that reads them should account for the persistence context instead of assuming related objects are always available after the session closes.
+
+Origin and destination are nullable at the mapping level because their requirements depend on the movement type. The public constructor enforces these combinations as described in the [domain rules](domain-model.md#business-rules); there is no type-dependent database check constraint configured here.
+
+A protected no-argument constructor supports JPA and getters expose the movement state. Constructor validation applies to application creation through the public constructor; it is not a JPA lifecycle validation callback.

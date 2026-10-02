@@ -142,15 +142,28 @@ The current constructor defines the required parameters but does not yet validat
 
 ## Business Rules
 
-The following rules describe the intended domain behavior and are not yet enforced by the implementation:
+### Movement Creation
 
-- Every movement belongs to a single asset;
-- An asset can have multiple movements;
-- Internal transfers have both an origin and a destination;
-- External entries may not have an origin;
-- Assets leaving the school temporarily or permanently may not have a destination registered in the school;
-- Locations represent physical places managed by the school;
-- External locations, such as repair shops, are not registered as school locations;
-- Asset movement history must be preserved rather than overwritten.
+The public `AssetMovement` constructor rejects missing `asset`, `type` or `date` with `IllegalArgumentException`. It also checks origin and destination according to the movement type:
+
+| Movement type | Origin | Destination |
+| --- | --- | --- |
+| `EXTERNAL_ENTRY` | Must be absent | Required |
+| `INTERNAL_TRANSFER` | Required | Required |
+| `TEMPORARY_EXIT` | Required | Must be absent |
+| `RETURN` | Must be absent | Required |
+| `DISPOSAL` | Required | Must be absent |
+
+Locations represent physical places managed by the school. External places, such as repair shops, are not registered as school locations; an absent origin or destination represents the external side of an event. Notes are optional.
+
+An asset can have multiple movements. Each movement references a single asset, and its records are intended to form the asset's location history.
+
+### Remaining Lifecycle Rules
+
+The current validation checks required references and their presence or absence. It does not yet check whether origin and destination are different, whether the origin matches the asset's current location, movement chronology or compatibility with the asset's current status.
+
+Creating a movement does not automatically update `Asset.status`. Coordinating state changes, persistence and preservation of movement history remains part of the future application use cases.
+
+`Location` now has a constructor and getters, with required, unique names of up to 50 characters expressed in its JPA mapping. Constructor-level name validation remains pending.
 
 These rules may evolve as the project is implemented and new domain requirements are identified.
