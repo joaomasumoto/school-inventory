@@ -11,7 +11,8 @@ import java.time.LocalDate;
 public class Asset {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "asset_seq")
+    @SequenceGenerator(name = "asset_seq", sequenceName = "asset_seq", allocationSize = 1)
     private Long id;
 
     @Column(nullable = false, length = 50)

@@ -9,7 +9,8 @@ import java.time.LocalDate;
 public class AssetMovement {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "asset_movement_seq")
+    @SequenceGenerator(name = "asset_movement_seq", sequenceName = "asset_movement_seq", allocationSize = 1)
     private Long id;
 
 

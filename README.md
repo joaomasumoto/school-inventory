@@ -12,7 +12,7 @@ It focuses on movable physical assets managed by administrative and management s
 
 - Java 21 and Spring Boot 4.1.1
 - Spring Web MVC and Spring Data JPA / Hibernate
-- PostgreSQL JDBC driver
+- PostgreSQL JDBC driver and Spring Boot Validation
 - Maven, with Maven Wrapper included
 
 ## Current Status
@@ -21,7 +21,7 @@ It focuses on movable physical assets managed by administrative and management s
 
 The project contains JPA mappings for `Asset`, `Location` and `AssetMovement`, including generated IDs, field constraints and movement relationships. Movement creation validates required data and the origin/destination combination for each movement type.
 
-Database connectivity, REST endpoints and the remaining lifecycle rules are still to be implemented. The application is being developed incrementally to explore domain modeling, testing and backend engineering decisions.
+Spring Data JPA repositories and local PostgreSQL configuration are available. REST endpoints, Bean Validation annotations and the remaining lifecycle rules are still to be implemented. The application is being developed incrementally to explore domain modeling, testing and backend engineering decisions.
 
 ## Documentation
 
@@ -42,7 +42,29 @@ Install JDK 21 and set `JAVA_HOME`. Compile with the included Maven Wrapper:
 .\mvnw.cmd compile
 ```
 
-The first build requires internet access to download Maven and dependencies. Running the application or its generated Spring context test requires a configured PostgreSQL datasource. Complete database setup and run instructions will follow with the persistence implementation.
+The first build requires internet access to download Maven and dependencies.
+
+## Run Locally
+
+Create a PostgreSQL database named `school_inventory` on `localhost:5432`. The default database user is `postgres`. Set the password through an environment variable before starting the application:
+
+```powershell
+# Windows PowerShell: replace the example value with your local password
+$env:SPRING_DATASOURCE_PASSWORD = '<your-local-password>'
+.\mvnw.cmd spring-boot:run
+```
+
+```bash
+# Linux / macOS
+export SPRING_DATASOURCE_PASSWORD='<your-local-password>'
+./mvnw spring-boot:run
+```
+
+To use a different database address or user, also set `SPRING_DATASOURCE_URL` or `SPRING_DATASOURCE_USERNAME`.
+
+The current development configuration uses `spring.jpa.hibernate.ddl-auto=update` and logs formatted SQL. Hibernate can update the schema when the application starts; use a local development database. Controlled schema migrations are still pending.
+
+The generated Spring context test also requires the database and environment variables. Run it with `.\mvnw.cmd test` on Windows or `./mvnw test` on Linux / macOS.
 
 ## Roadmap
 
