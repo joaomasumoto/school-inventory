@@ -1,0 +1,32 @@
+# Service Layer
+
+[Back to project overview](../README.md)
+
+## Current Structure
+
+Entities now live in `domain.entities`, while enums remain in `domain.enums`. Repository imports have been updated accordingly.
+
+`LocationService` is a Spring `@Service` with constructor injection of `LocationRepository`. `AssetService` and `AssetMovementService` are empty placeholders and do not yet implement use cases.
+
+## Location Operations
+
+| Method | Current behavior |
+| --- | --- |
+| `createLocation(name)` | Normalizes and validates the name, checks for duplicates and returns the saved entity. |
+| `updateLocation(id, newName)` | Finds the entity, validates and normalizes the new name, checks for duplicates excluding its own ID, then renames and saves it. |
+| `findLocationById(id)` | Returns the entity or throws `IllegalArgumentException("Location not found")`. |
+| `deactivationLocation(id)` | Marks the entity inactive and saves it without deleting it. |
+| `findAll()` | Lists all locations, including inactive ones. |
+| `findAllActive()` | Delegates to `findByActiveTrue()`. |
+
+Locations start with `active = true`. The non-nullable boolean field records whether the location is active; `rename` and `deactivate` expose explicit domain changes. Deactivation retains the row and its historical references. Lookup and rename currently also accept inactive locations.
+
+`LocationService` uses `existsByName` on creation and `existsByNameAndIdNot` on update. Duplicate names raise `IllegalArgumentException` with a descriptive message; keeping the current location's own name is allowed. `findByName` is declared but not used by the service. Checks include inactive locations and do not explicitly ignore case. The unique database constraint remains necessary to handle concurrent requests.
+
+## Name Validation
+
+`Location.normalizeName` rejects null or blank names, removes leading and trailing whitespace with `strip()`, and rejects names longer than 50 characters after normalization. Both the constructor and `rename` use this method, so invalid renames leave the existing name unchanged. The service also normalizes names before checking uniqueness.
+
+## Remaining Work
+
+The service currently has no explicit transaction covering an entire load-and-update operation. A service transaction boundary remains a possible next improvement. Integration verification of JPA mappings, database constraints, transactions and preservation of historical references remains pending.

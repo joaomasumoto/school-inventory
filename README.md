@@ -21,12 +21,14 @@ It focuses on movable physical assets managed by administrative and management s
 
 The project contains JPA mappings for `Asset`, `Location` and `AssetMovement`, including generated IDs, field constraints and movement relationships. Movement creation validates required data and the origin/destination combination for each movement type.
 
-Spring Data JPA repositories and local PostgreSQL configuration are available. REST endpoints, Bean Validation annotations and the remaining lifecycle rules are still to be implemented. The application is being developed incrementally to explore domain modeling, testing and backend engineering decisions.
+Spring Data JPA repositories and local PostgreSQL configuration are available. Entities are organized under `domain.entities`. `LocationService` supports creation, renaming, lookup, listing and deactivation, with name normalization, validation and duplicate checks; `AssetService` and `AssetMovementService` are placeholders. REST endpoints, Bean Validation annotations and the remaining lifecycle rules are still to be implemented. The application is being developed incrementally to explore domain modeling, testing and backend engineering decisions.
 
 ## Documentation
 
 - [Domain model and decisions](docs/domain-model.md): scope of the domain objects, asset statuses, encapsulation, creation and intended business rules.
 - [JPA persistence mapping](docs/jpa-mapping.md): entity mapping, IDs, constraints, enums and persistence constructors.
+
+- [Service layer](docs/service-layer.md): implemented location operations and current limitations.
 
 ## Build
 

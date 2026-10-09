@@ -79,7 +79,7 @@ Optional fields include:
 
 For example, `entryDate` is optional because legacy assets may already exist in the school without a known entry date. This allows existing inventory data to be migrated without inventing unavailable information.
 
-These annotations describe database mapping constraints; they do not validate constructor arguments. Null and blank validation in application code is still to be implemented. Database constraints also require a matching schema, managed through schema generation or migrations.
+These annotations describe database mapping constraints; they do not validate constructor arguments. Null and blank validation for `Asset` constructor arguments is still to be implemented. Database constraints also require a matching schema, managed through schema generation or migrations.
 
 ## Asset Name
 
@@ -175,7 +175,7 @@ All three domain classes are mapped as entities and have Spring Data JPA reposit
 
 `Location` is an entity with a generated `Long` ID using `SEQUENCE` and `location_seq`. Its name is mapped with `@Column(nullable = false, unique = true, length = 50)`: the schema should require a name of at most 50 characters and prevent duplicate names.
 
-A protected no-argument constructor supports JPA; the public `Location(String name)` constructor and getters support application code without public setters. The constructor does not yet validate null, blank or overlong names. Uniqueness requires the corresponding database constraint.
+A protected no-argument constructor supports JPA; the public `Location(String name)` constructor and getters support application code without public setters. The constructor and `rename` reject null, blank or overlong names and strip surrounding whitespace. Uniqueness requires the corresponding database constraint.
 
 ## Asset Movement Mapping
 
@@ -200,4 +200,10 @@ A protected no-argument constructor supports JPA and getters expose the movement
 
 ## Validation Dependency
 
-The project includes `spring-boot-starter-validation`. Bean Validation annotations have not yet been added to the entities. Existing JPA column constraints and the explicit `AssetMovement` constructor checks remain the current validation mechanisms.
+The project includes `spring-boot-starter-validation`. Bean Validation annotations have not yet been added to the entities. Existing JPA column constraints and the explicit `AssetMovement` constructor checks and `Location` name validation remain the current validation mechanisms.
+
+## Entity Organization and Location Activity
+
+The three entities are now in `com.joaomasumoto.schoolinventory.domain.entities`. `Location` additionally maps `active` with `@Column(nullable = false)` and initializes it to `true` in Java. That initializer is not an explicit database default or a migration for existing rows.
+
+`LocationRepository` declares `existsByName`, `existsByNameAndIdNot`, `findByName` and `findByActiveTrue`. Their database behavior still requires integration verification. When updating an existing development database, verify how the new non-nullable activity column is populated for previously stored locations.

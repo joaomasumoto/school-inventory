@@ -164,6 +164,12 @@ The current validation checks required references and their presence or absence.
 
 Creating a movement does not automatically update `Asset.status`. Coordinating state changes, persistence and preservation of movement history remains part of the future application use cases.
 
-`Location` now has a constructor and getters, with required, unique names of up to 50 characters expressed in its JPA mapping. Constructor-level name validation remains pending.
+`Location` now has a constructor and getters, with required, unique names of up to 50 characters expressed in its JPA mapping. The constructor validates and normalizes the name through `normalizeName`.
 
 These rules may evolve as the project is implemented and new domain requirements are identified.
+
+## Location Lifecycle
+
+`Location` now starts active and provides `rename(newName)` and `deactivate()` operations. Deactivation changes the active flag instead of deleting the location, allowing historical references to remain. `LocationService` provides all-location and active-only listings; lookup by ID and rename currently include inactive locations.
+
+Creation and rename reject null/blank names, strip surrounding whitespace and enforce the 50-character limit. The service checks duplicate names before saving, excluding the current ID on rename. See the [service layer documentation](service-layer.md) for the implemented behavior and identified gaps.

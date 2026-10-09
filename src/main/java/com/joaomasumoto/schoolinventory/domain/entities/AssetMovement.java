@@ -1,4 +1,4 @@
-package com.joaomasumoto.schoolinventory.domain;
+package com.joaomasumoto.schoolinventory.domain.entities;
 
 import com.joaomasumoto.schoolinventory.domain.enums.MovementType;
 import jakarta.persistence.*;
