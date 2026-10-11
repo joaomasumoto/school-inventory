@@ -68,12 +68,30 @@ The current development configuration uses `spring.jpa.hibernate.ddl-auto=update
 
 The generated Spring context test also requires the database and environment variables. Run it with `.\mvnw.cmd test` on Windows or `./mvnw test` on Linux / macOS.
 
+## Unit Tests
+
+Initial JUnit and Mockito tests cover location lookup and selected update scenarios. `LocationServiceTest` is still being developed; creation, deactivation and listing tests remain empty placeholders.
+
+Run only this isolated test class without starting Spring or connecting to PostgreSQL:
+
+```powershell
+# Windows PowerShell
+.\mvnw.cmd "-Dtest=LocationServiceTest" test
+```
+
+```bash
+# Linux / macOS
+./mvnw -Dtest=LocationServiceTest test
+```
+
+See [service test coverage](docs/service-layer.md#unit-tests-in-progress) for the implemented scenarios and remaining work.
+
 ## Roadmap
 
 - [ ] Complete domain model and JPA relationships
 - [ ] REST API and PostgreSQL persistence
 - [ ] Validation and exception handling
-- [ ] Unit tests with JUnit and Mockito
+- [ ] Expand unit tests with JUnit and Mockito (initial location tests implemented)
 - [ ] API documentation with OpenAPI / Swagger
 - [ ] Docker and Docker Compose
 - [ ] Cloud deployment and CI/CD

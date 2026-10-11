@@ -30,3 +30,21 @@ Locations start with `active = true`. The non-nullable boolean field records whe
 ## Remaining Work
 
 The service currently has no explicit transaction covering an entire load-and-update operation. A service transaction boundary remains a possible next improvement. Integration verification of JPA mappings, database constraints, transactions and preservation of historical references remains pending.
+
+## Unit Tests in Progress
+
+`LocationServiceTest` uses JUnit Jupiter and a Mockito mock of `LocationRepository`. `@BeforeEach` creates a fresh mock and service instance for each execution. These tests exercise the real service logic without loading the Spring context or accessing a database.
+
+Implemented scenarios:
+
+- Lookup returns the same location supplied by the repository when the ID exists.
+- Lookup throws `IllegalArgumentException` when the repository returns `Optional.empty()`.
+- Update returns the renamed location when the new name is available.
+- A duplicate name raises `IllegalArgumentException`, preserves the original name and does not call `save` with that location.
+- A parameterized update test uses `@MethodSource` to reject null, empty, whitespace-only and 51-character names. Each case checks the exception, preservation of the original name and absence of a `save` call for that location.
+
+Test names follow `methodName_ExpectedBehavior_Scenario`.
+
+The class currently contains eight implemented test executions (including four parameterized inputs) and four empty `@Test` placeholders: `createLocation`, `deactivationLocation`, `findAll` and `findAllActive`. Those placeholders pass without assertions and must not be counted as implemented coverage.
+
+Further scenarios, such as updating a missing ID, accepting exactly 50 characters, trimming names and retaining a location's own name, remain to be added. Mock-based tests do not verify database query behavior, uniqueness constraints or transactions.
