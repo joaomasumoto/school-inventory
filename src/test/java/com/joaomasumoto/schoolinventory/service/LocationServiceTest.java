@@ -29,7 +29,33 @@ class LocationServiceTest {
     }
 
     @Test
-    void createLocation() {
+    void createLocation_ReturnsSavedLocation_WhenNameIsAvailable() {
+        String locationName = " Room ";
+        Mockito.when(locationRepository.existsByName(locationName)).thenReturn(false);
+        Mockito.when(locationRepository.save(Mockito.any(Location.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Location newLocation = locationService.createLocation(locationName);
+
+        Assertions.assertEquals("Room", newLocation.getName());
+        Mockito.verify(locationRepository).save(Mockito.argThat(location -> location.getName().equals("Room")));
+    }
+
+    @Test
+    void createLocation_ThrowsIllegalArgumentException_WhenNameAlreadyExists() {
+        String locationName = " Room ";
+        Mockito.when(locationRepository.existsByName("Room")).thenReturn(true);
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.createLocation(locationName));
+        Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidLocationNames")
+    void createLocation_ThrowsIllegalArgumentException_WhenNameIsInvalid(String name) {
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.createLocation(name));
+
+        Mockito.verifyNoInteractions(locationRepository);
     }
 
     @Test
@@ -42,7 +68,10 @@ class LocationServiceTest {
         Location result = locationService.updateLocation(1L, "Room2");
 
         Assertions.assertEquals("Room2", result.getName());
+        Mockito.verify(locationRepository).save(location);
     }
+
+
 
     @Test
     void updateLocation_ThrowsIllegalArgumentException_WhenNameIsAlreadyUsed() {
@@ -53,7 +82,7 @@ class LocationServiceTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.updateLocation(1L, "Library"));
         Assertions.assertEquals("Room", location.getName());
 
-        Mockito.verify(locationRepository, Mockito.never()).save(location);
+        Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
     }
 
     static Stream<String> invalidLocationNames() {
@@ -77,6 +106,16 @@ class LocationServiceTest {
 
         Mockito.verify(locationRepository, Mockito.never()).save(location);
 
+    }
+
+    @Test
+    void updateLocation_ThrowsIllegalArgumentException_WhenLocationDoesNotExist() {
+
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.updateLocation(1L, "Room"));
+
+        Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
     }
 
     @Test

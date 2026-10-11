@@ -37,14 +37,19 @@ The service currently has no explicit transaction covering an entire load-and-up
 
 Implemented scenarios:
 
+- Creation returns the saved location with surrounding whitespace removed and verifies the saved name.
+- Creation rejects an existing normalized name without saving any location.
+- Parameterized creation rejects null, empty, whitespace-only and 51-character names without interacting with the repository.
+- Update rejects a missing ID without saving any location.
+
 - Lookup returns the same location supplied by the repository when the ID exists.
 - Lookup throws `IllegalArgumentException` when the repository returns `Optional.empty()`.
-- Update returns the renamed location when the new name is available.
-- A duplicate name raises `IllegalArgumentException`, preserves the original name and does not call `save` with that location.
+- Update returns the renamed location when the new name is available and verifies the save call.
+- A duplicate name raises `IllegalArgumentException`, preserves the original name and does not call `save` with any location.
 - A parameterized update test uses `@MethodSource` to reject null, empty, whitespace-only and 51-character names. Each case checks the exception, preservation of the original name and absence of a `save` call for that location.
 
 Test names follow `methodName_ExpectedBehavior_Scenario`.
 
-The class currently contains eight implemented test executions (including four parameterized inputs) and four empty `@Test` placeholders: `createLocation`, `deactivationLocation`, `findAll` and `findAllActive`. Those placeholders pass without assertions and must not be counted as implemented coverage.
+The class currently contains 15 implemented test executions (including eight executions from two parameterized tests) and three empty `@Test` placeholders: `deactivationLocation`, `findAll` and `findAllActive`. Those placeholders pass without assertions and must not be counted as implemented coverage.
 
-Further scenarios, such as updating a missing ID, accepting exactly 50 characters, trimming names and retaining a location's own name, remain to be added. Mock-based tests do not verify database query behavior, uniqueness constraints or transactions.
+Further scenarios, such as accepting exactly 50 characters, trimming names on update and retaining a location's own name, remain to be added. Mock-based tests do not verify database query behavior, uniqueness constraints or transactions.
