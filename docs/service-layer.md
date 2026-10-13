@@ -44,17 +44,20 @@ Implemented scenarios:
 
 - Lookup returns the same location supplied by the repository when the ID exists.
 - Lookup throws `IllegalArgumentException` when the repository returns `Optional.empty()`.
-- Update returns the renamed location when the new name is available and verifies the save call.
+- Update strips surrounding whitespace, returns the renamed location and verifies both the normalized duplicate lookup and the save call.
 - A duplicate name raises `IllegalArgumentException`, preserves the original name and does not call `save` with any location.
-- A parameterized update test uses `@MethodSource` to reject null, empty, whitespace-only and 51-character names. Each case checks the exception, preservation of the original name and absence of a `save` call for that location.
+- A parameterized update test uses `@MethodSource` to reject null, empty, whitespace-only and 51-character names. Each case checks the exception, preservation of the original name and absence of a `save` call with any location.
 
 - Deactivation changes an existing location from active to inactive and verifies the save call.
-- Deactivation throws `IllegalArgumentException` when the location does not exist.
-- `findAll` returns the repository list and handles an empty list.
+- Deactivation throws `IllegalArgumentException` when the location does not exist and does not save any location.
+- `findAll` returns the complete repository list, including an inactive location, checks the returned size and handles an empty list.
 - `findAllActive` delegates to `findByActiveTrue`, returns its list and handles an empty list. These tests verify service delegation, not database filtering.
+
+- Creation and update accept names with exactly 50 characters.
+- Update allows retaining the current name and verifies that the duplicate query excludes the current ID.
 
 Test names follow `methodName_ExpectedBehavior_Scenario`.
 
-The class currently contains 21 implemented test executions (including eight executions from two parameterized tests), with no empty test methods. All 21 passed in the latest isolated service test run. This does not imply exhaustive coverage of every behavior.
+The class currently contains 24 implemented test executions (including eight executions from two parameterized tests), with no empty test methods. All 24 passed in the latest isolated service test run. This does not imply exhaustive coverage of every behavior.
 
-Further scenarios, such as accepting exactly 50 characters, trimming names on update, retaining a location's own name and including inactive locations in the `findAll` test data, remain to be added. Mock-based tests do not verify database query behavior, uniqueness constraints or transactions.
+Mock-based tests do not verify database query behavior, uniqueness constraints or transactions. Integration verification remains pending; the passing unit tests do not imply exhaustive coverage of all lifecycle rules.
