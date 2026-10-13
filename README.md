@@ -70,7 +70,7 @@ The generated Spring context test also requires the database and environment var
 
 ## Unit Tests
 
-Initial JUnit and Mockito tests cover location creation, lookup and selected update scenarios. `LocationServiceTest` is still being developed; deactivation and listing tests remain empty placeholders.
+JUnit and Mockito tests cover location creation, lookup, updates, deactivation and listings. `LocationServiceTest` currently has 21 test executions, including parameterized invalid-name cases, with no empty test methods. Additional boundary scenarios and integration tests remain pending.
 
 Run only this isolated test class without starting Spring or connecting to PostgreSQL:
 

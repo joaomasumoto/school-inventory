@@ -7,14 +7,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class LocationServiceTest {
 
@@ -31,13 +28,14 @@ class LocationServiceTest {
     @Test
     void createLocation_ReturnsSavedLocation_WhenNameIsAvailable() {
         String locationName = " Room ";
-        Mockito.when(locationRepository.existsByName(locationName)).thenReturn(false);
+        Mockito.when(locationRepository.existsByName("Room")).thenReturn(false);
         Mockito.when(locationRepository.save(Mockito.any(Location.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Location newLocation = locationService.createLocation(locationName);
 
         Assertions.assertEquals("Room", newLocation.getName());
         Mockito.verify(locationRepository).save(Mockito.argThat(location -> location.getName().equals("Room")));
+        Mockito.verify(locationRepository).existsByName("Room");
     }
 
     @Test
@@ -139,14 +137,77 @@ class LocationServiceTest {
     }
 
     @Test
-    void deactivationLocation() {
+    void deactivateLocation_SetsActiveToFalse_WhenLocationExists() {
+        Location location = new Location("Room");
+
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+
+        Assertions.assertTrue(location.getActive());
+
+        locationService.deactivateLocation(1L);
+
+        Assertions.assertFalse(location.getActive());
+        Mockito.verify(locationRepository).save(location);
     }
 
     @Test
-    void findAll() {
+    void deactivateLocation_ThrowsIllegalArgumentException_WhenLocationDoesNotExist() {
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.deactivateLocation(1L));
     }
 
     @Test
-    void findAllActive() {
+    void findAll_ReturnsAllLocations_WhenLocationsExist() {
+        List<Location> locationList = List.of(
+                new Location("Room 1"),
+                new Location("Room 2"),
+                new Location("Room 3")
+        );
+
+        Mockito.when(locationRepository.findAll()).thenReturn(locationList);
+
+        List<Location> result = locationService.findAll();
+
+        Assertions.assertEquals(locationList, result);
+        Mockito.verify(locationRepository).findAll();
     }
+
+    @Test
+    void findAll_ReturnsEmptyList_WhenNoLocationsExist() {
+        Mockito.when(locationRepository.findAll()).thenReturn(List.of());
+
+        List<Location> result = locationService.findAll();
+
+        Assertions.assertTrue(result.isEmpty());
+        Mockito.verify(locationRepository).findAll();
+    }
+
+    @Test
+    void findAllActive_ReturnsActiveLocations_WhenActiveLocationsExist() {
+        List<Location> locationList = List.of(
+                new Location("Room 1"),
+                new Location("Room 2")
+        );
+
+        Mockito.when(locationRepository.findByActiveTrue()).thenReturn(locationList);
+
+        List<Location> result = locationService.findAllActive();
+
+        Assertions.assertEquals(locationList, result);
+        Mockito.verify(locationRepository).findByActiveTrue();
+    }
+
+    @Test
+    void findAllActive_ReturnsEmptyList_WhenNoActiveLocationsExist() {
+        List<Location> locationList = List.of();
+
+        Mockito.when(locationRepository.findByActiveTrue()).thenReturn(locationList);
+
+        List<Location> result = locationService.findAllActive();
+
+        Assertions.assertTrue(result.isEmpty());
+        Mockito.verify(locationRepository).findByActiveTrue();
+    }
+
 }

@@ -47,7 +47,7 @@ public class LocationService {
         return location.orElseThrow(() -> new IllegalArgumentException("Location not found"));
     }
 
-    public void deactivationLocation(Long id) {
+    public void deactivateLocation(Long id) {
         Location location = findLocationById(id);
         location.deactivate();
         locationRepository.save(location);
