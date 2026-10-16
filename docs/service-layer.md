@@ -61,3 +61,7 @@ Test names follow `methodName_ExpectedBehavior_Scenario`.
 The class currently contains 24 implemented test executions (including eight executions from two parameterized tests), with no empty test methods. All 24 passed in the latest isolated service test run. This does not imply exhaustive coverage of every behavior.
 
 Mock-based tests do not verify database query behavior, uniqueness constraints or transactions. Integration verification remains pending; the passing unit tests do not imply exhaustive coverage of all lifecycle rules.
+
+## HTTP Exposure
+
+`LocationController` now exposes listing all locations, listing active locations, lookup by ID and creation. Creation accepts `LocationRequest` and returns `LocationResponse` with a 201 response and a `Location` header. Rename and deactivation remain service-only operations. See the [location API documentation](location-api.md) for routes and current HTTP-layer limitations.
