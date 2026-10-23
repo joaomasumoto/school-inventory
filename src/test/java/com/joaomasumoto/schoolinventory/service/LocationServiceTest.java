@@ -2,6 +2,7 @@ package com.joaomasumoto.schoolinventory.service;
 
 import com.joaomasumoto.schoolinventory.domain.entities.Location;
 import com.joaomasumoto.schoolinventory.repository.LocationRepository;
+import com.joaomasumoto.schoolinventory.repository.AssetRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ class LocationServiceTest {
     @BeforeEach
     void setUp() {
         locationRepository = Mockito.mock(LocationRepository.class);
-        locationService = new LocationService(locationRepository);
+        locationService = new LocationService(locationRepository, Mockito.mock(AssetRepository.class));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.joaomasumoto.schoolinventory.service;
 
 import com.joaomasumoto.schoolinventory.domain.entities.Location;
+import com.joaomasumoto.schoolinventory.repository.AssetRepository;
 import com.joaomasumoto.schoolinventory.repository.LocationRepository;
 import org.springframework.stereotype.Service;
 
@@ -11,9 +12,11 @@ import java.util.Optional;
 public class LocationService {
 
     private final LocationRepository locationRepository;
+    private final AssetRepository assetRepository;
 
-    public LocationService(LocationRepository locationRepository) {
+    public LocationService(LocationRepository locationRepository, AssetRepository assetRepository) {
         this.locationRepository = locationRepository;
+        this.assetRepository = assetRepository;
     }
 
     public Location createLocation(String name) {
@@ -49,9 +52,15 @@ public class LocationService {
 
     public void deactivateLocation(Long id) {
         Location location = findLocationById(id);
+        if (!location.getActive()) {
+            return;
+        }
+        if (assetRepository.existsByLocationId(id)) {
+            throw new IllegalArgumentException("Location cannot be deactivated while assets are assigned to it.");
+        }
         location.deactivate();
         locationRepository.save(location);
-    };
+    }
 
     public List<Location> findAll() {
         return locationRepository.findAll();

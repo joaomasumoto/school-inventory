@@ -79,7 +79,7 @@ Optional fields include:
 
 For example, `entryDate` is optional because legacy assets may already exist in the school without a known entry date. This allows existing inventory data to be migrated without inventing unavailable information.
 
-These annotations describe database mapping constraints; they do not validate constructor arguments. Null and blank validation for `Asset` constructor arguments is still to be implemented. Database constraints also require a matching schema, managed through schema generation or migrations.
+These annotations describe database mapping constraints; they do not validate constructor arguments. The `Asset` constructor now validates its name and initial location and rejects null acquisition method and status. Database constraints also require a matching schema, managed through schema generation or migrations.
 
 ## Asset Name
 
@@ -147,14 +147,15 @@ This constructor exists so that the JPA provider can instantiate the entity when
 public Asset(
         String name,
         AcquisitionMethod acquisitionMethod,
-        AssetStatus status) {
-    this.name = name;
-    this.acquisitionMethod = acquisitionMethod;
-    this.status = status;
+        AssetStatus status, Location location) {
+    this.name = StringValidator.validateName(name, "Asset name", 50);
+    this.acquisitionMethod = Objects.requireNonNull(acquisitionMethod, "Acquisition method is required.");
+    this.status = Objects.requireNonNull(status, "Asset status is required.");
+    this.location = validateLocation(location);
 }
 ```
 
-The public constructor expresses the intended domain rule for creating a new asset: an asset must have a name, acquisition method and status. It currently assigns these parameters without validating them.
+The public constructor expresses the intended domain rule for creating a new asset: an asset must have a valid name, non-null acquisition method and status, and an active initial location.
 
 The protected empty constructor exists for persistence purposes and is not intended to be the normal way application code creates assets. This preserves encapsulation while satisfying JPA requirements. Since the mapping annotations are placed on fields, JPA uses field access and does not require public setters.
 
@@ -207,3 +208,9 @@ The project includes `spring-boot-starter-validation`. Bean Validation annotatio
 The three entities are now in `com.joaomasumoto.schoolinventory.domain.entities`. `Location` additionally maps `active` with `@Column(nullable = false)` and initializes it to `true` in Java. That initializer is not an explicit database default or a migration for existing rows.
 
 `LocationRepository` declares `existsByName`, `existsByNameAndIdNot`, `findByName` and `findByActiveTrue`. Their database behavior still requires integration verification. When updating an existing development database, verify how the new non-nullable activity column is populated for previously stored locations.
+
+## Current Asset Location
+
+`Asset.location` references its current location through `@ManyToOne(fetch = FetchType.LAZY, optional = true)` and `@JoinColumn(name = "location_id")`. The mapping permits null, but the public creation constructor requires a non-null active location. This distinguishes the current mapping from the stricter creation rule; location transitions are not implemented yet.
+
+The current-location reference does not replace movement history. Creating an asset currently assigns the location without recording a movement. Keeping current location and movement history consistent remains future work. Location deactivation rejects any assigned asset; an already inactive location is left unchanged.

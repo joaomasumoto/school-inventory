@@ -21,7 +21,7 @@ It focuses on movable physical assets managed by administrative and management s
 
 The project contains JPA mappings for `Asset`, `Location` and `AssetMovement`, including generated IDs, field constraints and movement relationships. Movement creation validates required data and the origin/destination combination for each movement type.
 
-Spring Data JPA repositories and local PostgreSQL configuration are available. Entities are organized under `domain.entities`. `LocationService` supports creation, renaming, lookup, listing and deactivation, with name normalization, validation and duplicate checks; `AssetService` and `AssetMovementService` are placeholders. Location listing, lookup and creation endpoints are implemented. Update/deactivation endpoints, Bean Validation annotations, HTTP exception handling and the remaining lifecycle rules are still to be implemented. The application is being developed incrementally to explore domain modeling, testing and backend engineering decisions.
+Spring Data JPA repositories and local PostgreSQL configuration are available. Entities are organized under `domain.entities`. `LocationService` supports creation, renaming, lookup, listing and deactivation, with name normalization, validation and duplicate checks; `AssetService` creates assets in an existing active location; `AssetMovementService` remains a placeholder. Locations with assigned assets cannot be deactivated. Location listing, lookup, creation and update endpoints are implemented. Deactivation endpoints, Bean Validation annotations, HTTP exception handling and the remaining lifecycle rules are still to be implemented. The application is being developed incrementally to explore domain modeling, testing and backend engineering decisions.
 
 ## Documentation
 
@@ -72,18 +72,18 @@ The generated Spring context test also requires the database and environment var
 
 ## Unit Tests
 
-JUnit and Mockito tests cover location creation, lookup, updates, deactivation and listings. `LocationServiceTest` currently has 24 test executions, including parameterized invalid-name cases, with no empty test methods. Tests include the 50-character acceptance boundary, name normalization and lists containing inactive locations. Integration tests remain pending.
+JUnit and Mockito tests cover location creation, lookup, updates, deactivation and listings. `LocationServiceTest` currently has 24 test executions, including parameterized invalid-name cases, with no empty test methods. Tests include the 50-character acceptance boundary, name normalization and lists containing inactive locations. `AssetServiceTest` adds three cases for active, missing and inactive locations (27 service test executions in total). Integration tests remain pending.
 
-Run only this isolated test class without starting Spring or connecting to PostgreSQL:
+Run both isolated service test classes without starting Spring or connecting to PostgreSQL:
 
 ```powershell
 # Windows PowerShell
-.\mvnw.cmd "-Dtest=LocationServiceTest" test
+.\mvnw.cmd "-Dtest=LocationServiceTest,AssetServiceTest" test
 ```
 
 ```bash
 # Linux / macOS
-./mvnw -Dtest=LocationServiceTest test
+./mvnw -Dtest=LocationServiceTest,AssetServiceTest test
 ```
 
 See [service test coverage](docs/service-layer.md#unit-tests-in-progress) for the implemented scenarios and remaining work.

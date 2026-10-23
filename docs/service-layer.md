@@ -6,7 +6,7 @@
 
 Entities now live in `domain.entities`, while enums remain in `domain.enums`. Repository imports have been updated accordingly.
 
-`LocationService` is a Spring `@Service` with constructor injection of `LocationRepository`. `AssetService` and `AssetMovementService` are empty placeholders and do not yet implement use cases.
+`LocationService` is a Spring `@Service` with constructor injection of `LocationRepository` and `AssetRepository`. `AssetService` implements asset creation; `AssetMovementService` remains an empty placeholder.
 
 ## Location Operations
 
@@ -15,7 +15,7 @@ Entities now live in `domain.entities`, while enums remain in `domain.enums`. Re
 | `createLocation(name)` | Normalizes and validates the name, checks for duplicates and returns the saved entity. |
 | `updateLocation(id, newName)` | Finds the entity, validates and normalizes the new name, checks for duplicates excluding its own ID, then renames and saves it. |
 | `findLocationById(id)` | Returns the entity or throws `IllegalArgumentException("Location not found")`. |
-| `deactivateLocation(id)` | Marks the entity inactive and saves it without deleting it. |
+| `deactivateLocation(id)` | Returns immediately if already inactive; rejects locations with assigned assets; otherwise marks inactive and saves. |
 | `findAll()` | Lists all locations, including inactive ones. |
 | `findAllActive()` | Delegates to `findByActiveTrue()`. |
 
@@ -25,7 +25,7 @@ Locations start with `active = true`. The non-nullable boolean field records whe
 
 ## Name Validation
 
-`Location.normalizeName` rejects null or blank names, removes leading and trailing whitespace with `strip()`, and rejects names longer than 50 characters after normalization. Both the constructor and `rename` use this method, so invalid renames leave the existing name unchanged. The service also normalizes names before checking uniqueness.
+`Location.normalizeName` delegates to the shared `StringValidator.validateName`, which rejects null or blank names, removes leading and trailing whitespace with `strip()`, and rejects names longer than 50 characters after normalization. Both the constructor and `rename` use this method, so invalid renames leave the existing name unchanged. The service also normalizes names before checking uniqueness.
 
 ## Remaining Work
 
@@ -64,4 +64,14 @@ Mock-based tests do not verify database query behavior, uniqueness constraints o
 
 ## HTTP Exposure
 
-`LocationController` now exposes listing all locations, listing active locations, lookup by ID and creation. Creation accepts `LocationRequest` and returns `LocationResponse` with a 201 response and a `Location` header. Rename and deactivation remain service-only operations. See the [location API documentation](location-api.md) for routes and current HTTP-layer limitations.
+`LocationController` now exposes listing all locations, listing active locations, lookup by ID, creation and update. Creation accepts `LocationRequest` and returns `LocationResponse` with a 201 response and a `Location` header. Update accepts the same request DTO and returns `LocationResponse` with status 200. Deactivation remains a service-only operation. See the [location API documentation](location-api.md) for routes and current HTTP-layer limitations.
+
+## Asset Creation and Location Assignment
+
+`AssetService.createAsset(name, acquisitionMethod, status, locationId)` finds the location, constructs an asset and saves it through `AssetRepository`. A missing location raises `IllegalArgumentException`. The entity requires a non-null active initial location. Asset creation does not yet record an initial movement or expose an HTTP endpoint.
+
+`StringValidator.validateName` is shared by assets and locations: it rejects null/blank names, strips surrounding whitespace and enforces the supplied maximum length (50 for both entities). `Asset` also requires non-null acquisition method and status via `Objects.requireNonNull`, which throws `NullPointerException` for missing values.
+
+`AssetRepository.existsByLocationId` supports the location deactivation guard. This query considers all assigned assets regardless of status. Already inactive locations return before this query and are not saved again. There is no explicit service transaction or locking for concurrent assignment/deactivation yet.
+
+`AssetServiceTest` has three passing cases: creation in an active location, rejection of a missing location and rejection of an inactive location. Together with the 24 location cases, the isolated suite has 27 passing executions. The new deactivation guard for occupied locations and the already-inactive early return do not yet have dedicated tests.

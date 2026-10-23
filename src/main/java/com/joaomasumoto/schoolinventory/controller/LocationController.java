@@ -50,5 +50,12 @@ public class LocationController {
         return ResponseEntity.created(uri).body(response);
     }
 
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<LocationResponse> updateLocation(@PathVariable Long id, @RequestBody LocationRequest locationRequest) {
+        Location updatedLocation = service.updateLocation(id, locationRequest.name());
+        LocationResponse locationResponse = new LocationResponse(updatedLocation.getId(), updatedLocation.getName(), updatedLocation.getActive());
+
+        return ResponseEntity.ok().body(locationResponse);
+    }
 
 }

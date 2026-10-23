@@ -1,5 +1,6 @@
 package com.joaomasumoto.schoolinventory.domain.entities;
 
+import com.joaomasumoto.schoolinventory.util.validation.StringValidator;
 import jakarta.persistence.*;
 
 @Entity
@@ -37,17 +38,7 @@ public class Location {
     }
 
     public static String normalizeName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Location name must not be null or blank.");
-        }
-
-        String normalizedName = name.strip();
-
-        if (normalizedName.length() > 50) {
-            throw new IllegalArgumentException("Location name must not exceed 50 characters.");
-        }
-
-        return normalizedName;
+        return StringValidator.validateName(name, "Location name", 50);
     }
 
     public void deactivate() {
