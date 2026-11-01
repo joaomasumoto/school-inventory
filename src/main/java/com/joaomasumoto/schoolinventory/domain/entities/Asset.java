@@ -2,6 +2,7 @@ package com.joaomasumoto.schoolinventory.domain.entities;
 
 import com.joaomasumoto.schoolinventory.domain.enums.AcquisitionMethod;
 import com.joaomasumoto.schoolinventory.domain.enums.AssetStatus;
+import com.joaomasumoto.schoolinventory.exception.BusinessConflictException;
 import com.joaomasumoto.schoolinventory.util.validation.StringValidator;
 import jakarta.persistence.*;
 
@@ -92,7 +93,7 @@ public class Asset {
             throw new IllegalArgumentException("New assets must have an first location.");
         }
         if (!location.getActive()) {
-            throw new IllegalArgumentException("Inactives locations cannot receive new assets");
+            throw new BusinessConflictException("Inactives locations cannot receive new assets");
         }
 
         return location;

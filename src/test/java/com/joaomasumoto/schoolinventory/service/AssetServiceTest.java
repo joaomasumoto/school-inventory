@@ -4,6 +4,8 @@ import com.joaomasumoto.schoolinventory.domain.entities.Asset;
 import com.joaomasumoto.schoolinventory.domain.entities.Location;
 import com.joaomasumoto.schoolinventory.domain.enums.AcquisitionMethod;
 import com.joaomasumoto.schoolinventory.domain.enums.AssetStatus;
+import com.joaomasumoto.schoolinventory.exception.BusinessConflictException;
+import com.joaomasumoto.schoolinventory.exception.ResourceNotFoundException;
 import com.joaomasumoto.schoolinventory.repository.AssetRepository;
 import com.joaomasumoto.schoolinventory.repository.LocationRepository;
 import org.junit.jupiter.api.Assertions;
@@ -44,23 +46,23 @@ public class AssetServiceTest {
     }
 
     @Test
-    void createAsset_ThrowException_WhenLocationDoesNotExist() {
+    void createAsset_ThrowsResourceNotFoundException_WhenLocationDoesNotExist() {
 
         Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> assetService.createAsset("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L));
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> assetService.createAsset("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L));
         Mockito.verify(assetRepository, Mockito.never()).save(Mockito.any(Asset.class));
     }
 
 
     @Test
-    void createAsset_ThrowsException_WhenLocationIsInactive() {
+    void createAsset_ThrowsBusinessConflictException_WhenLocationIsInactive() {
         Location location = new Location("Room");
         location.deactivate();
 
         Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> assetService.createAsset("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L));
+        Assertions.assertThrows(BusinessConflictException.class, () -> assetService.createAsset("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L));
         Mockito.verify(assetRepository, Mockito.never()).save(Mockito.any(Asset.class));
     }
 

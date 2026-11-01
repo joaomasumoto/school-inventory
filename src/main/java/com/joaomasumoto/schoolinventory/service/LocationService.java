@@ -1,6 +1,8 @@
 package com.joaomasumoto.schoolinventory.service;
 
 import com.joaomasumoto.schoolinventory.domain.entities.Location;
+import com.joaomasumoto.schoolinventory.exception.BusinessConflictException;
+import com.joaomasumoto.schoolinventory.exception.ResourceNotFoundException;
 import com.joaomasumoto.schoolinventory.repository.AssetRepository;
 import com.joaomasumoto.schoolinventory.repository.LocationRepository;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ public class LocationService {
         String normalizedName = Location.normalizeName(name);
 
         if (locationRepository.existsByName(normalizedName)) {
-            throw new IllegalArgumentException("Location name already exists.");
+            throw new BusinessConflictException("Location name already exists.");
         }
 
         Location location = new Location(normalizedName);
@@ -37,7 +39,7 @@ public class LocationService {
         String normalizedName = Location.normalizeName(newName);
 
         if (locationRepository.existsByNameAndIdNot(normalizedName, id)) {
-            throw new IllegalArgumentException("Another location already uses this name.");
+            throw new BusinessConflictException("Another location already uses this name.");
         }
 
         location.rename(normalizedName);
@@ -47,7 +49,7 @@ public class LocationService {
 
     public Location findLocationById(Long id) {
         Optional<Location> location = locationRepository.findById(id);
-        return location.orElseThrow(() -> new IllegalArgumentException("Location not found"));
+        return location.orElseThrow(() -> new ResourceNotFoundException("Location not found"));
     }
 
     public void deactivateLocation(Long id) {
@@ -56,7 +58,7 @@ public class LocationService {
             return;
         }
         if (assetRepository.existsByLocationId(id)) {
-            throw new IllegalArgumentException("Location cannot be deactivated while assets are assigned to it.");
+            throw new BusinessConflictException("Location cannot be deactivated while assets are assigned to it.");
         }
         location.deactivate();
         locationRepository.save(location);

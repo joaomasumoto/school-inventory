@@ -1,6 +1,8 @@
 package com.joaomasumoto.schoolinventory.service;
 
 import com.joaomasumoto.schoolinventory.domain.entities.Location;
+import com.joaomasumoto.schoolinventory.exception.BusinessConflictException;
+import com.joaomasumoto.schoolinventory.exception.ResourceNotFoundException;
 import com.joaomasumoto.schoolinventory.repository.LocationRepository;
 import com.joaomasumoto.schoolinventory.repository.AssetRepository;
 import org.junit.jupiter.api.Assertions;
@@ -42,11 +44,11 @@ class LocationServiceTest {
     }
 
     @Test
-    void createLocation_ThrowsIllegalArgumentException_WhenNameAlreadyExists() {
+    void createLocation_ThrowsBusinessConflictException_WhenNameAlreadyExists() {
         String locationName = " Room ";
         Mockito.when(locationRepository.existsByName("Room")).thenReturn(true);
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.createLocation(locationName));
+        Assertions.assertThrows(BusinessConflictException.class, () -> locationService.createLocation(locationName));
         Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
     }
 
@@ -104,12 +106,12 @@ class LocationServiceTest {
 
 
     @Test
-    void updateLocation_ThrowsIllegalArgumentException_WhenNameIsAlreadyUsed() {
+    void updateLocation_ThrowsBusinessConflictException_WhenNameIsAlreadyUsed() {
         Location location = new Location("Room");
         Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
         Mockito.when(locationRepository.existsByNameAndIdNot("Library", 1L)).thenReturn(true);
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.updateLocation(1L, "Library"));
+        Assertions.assertThrows(BusinessConflictException.class, () -> locationService.updateLocation(1L, "Library"));
         Assertions.assertEquals("Room", location.getName());
 
         Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
@@ -155,11 +157,11 @@ class LocationServiceTest {
     }
 
     @Test
-    void updateLocation_ThrowsIllegalArgumentException_WhenLocationDoesNotExist() {
+    void updateLocation_ThrowsResourceNotFoundException_WhenLocationDoesNotExist() {
 
         Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.updateLocation(1L, "Room"));
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> locationService.updateLocation(1L, "Room"));
 
         Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
     }
@@ -176,11 +178,11 @@ class LocationServiceTest {
     }
 
     @Test
-    void findLocationById_ThrowsIllegalArgumentException_WhenLocationDoesNotExist() {
+    void findLocationById_ThrowsResourceNotFoundException_WhenLocationDoesNotExist() {
 
         Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.findLocationById(1L));
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> locationService.findLocationById(1L));
 
     }
 
@@ -201,23 +203,23 @@ class LocationServiceTest {
     }
 
     @Test
-    void deactivateLocation_ThrowsException_WhenLocationHasAssets() {
+    void deactivateLocation_ThrowsBusinessConflictException_WhenLocationHasAssets() {
         Location location = new Location("Room");
 
         Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
         Mockito.when(assetRepository.existsByLocationId(1L)).thenReturn(true);
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.deactivateLocation(1L));
+        Assertions.assertThrows(BusinessConflictException.class, () -> locationService.deactivateLocation(1L));
         Assertions.assertTrue(location.getActive());
 
         Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
     }
 
     @Test
-    void deactivateLocation_ThrowsIllegalArgumentException_WhenLocationDoesNotExist() {
+    void deactivateLocation_ThrowsResourceNotFoundException_WhenLocationDoesNotExist() {
         Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.deactivateLocation(1L));
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> locationService.deactivateLocation(1L));
 
         Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
     }

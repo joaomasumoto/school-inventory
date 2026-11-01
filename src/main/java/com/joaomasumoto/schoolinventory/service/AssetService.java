@@ -4,6 +4,7 @@ import com.joaomasumoto.schoolinventory.domain.entities.Asset;
 import com.joaomasumoto.schoolinventory.domain.entities.Location;
 import com.joaomasumoto.schoolinventory.domain.enums.AcquisitionMethod;
 import com.joaomasumoto.schoolinventory.domain.enums.AssetStatus;
+import com.joaomasumoto.schoolinventory.exception.ResourceNotFoundException;
 import com.joaomasumoto.schoolinventory.repository.AssetRepository;
 import com.joaomasumoto.schoolinventory.repository.LocationRepository;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class AssetService {
     }
 
     public Asset createAsset(String name, AcquisitionMethod acquisitionMethod, AssetStatus status, Long locationId) {
-        Location location = locationRepository.findById(locationId).orElseThrow(() -> new IllegalArgumentException("Location not found."));
+        Location location = locationRepository.findById(locationId).orElseThrow(() -> new ResourceNotFoundException("Location not found."));
         Asset asset = new Asset(name, acquisitionMethod, status, location);
 
         return assetRepository.save(asset);

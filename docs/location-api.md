@@ -58,12 +58,24 @@ PATCH /locations/1/deactivate
 
 On success, the endpoint returns `204 No Content` without a response body. The location remains stored with `active = false`, preserving historical references.
 
-The service rejects an active location with assigned assets. If the location is already inactive, the operation returns successfully without querying assets or saving again. A missing location raises `IllegalArgumentException`, as does an occupied active location; explicit HTTP error mapping remains pending.
+The service rejects an active location with assigned assets. If the location is already inactive, the operation returns successfully without querying assets or saving again. A missing location raises `ResourceNotFoundException` (404); an occupied active location raises `BusinessConflictException` (409).
+
+## HTTP Errors
+
+`GlobalExceptionHandler` uses `@RestControllerAdvice` to map exceptions to these responses:
+
+| Exception | Status | Examples |
+| --- | --- | --- |
+| `IllegalArgumentException` | 400 Bad Request | Null, blank or overlong location names. |
+| `ResourceNotFoundException` | 404 Not Found | Location ID not found during lookup, update or deactivation. |
+| `BusinessConflictException` | 409 Conflict | Duplicate location name or deactivation of an occupied active location. |
+
+Each handler returns the exception message as a string body, not a structured error DTO. For example, a duplicate location name during creation produces status 409 with the message `Location name already exists.` The mapping is implemented but has not yet been exercised by controller tests.
 
 ## Current Limitations
 
 - Deactivation is implemented in the service but does not yet have an HTTP endpoint.
 - Request DTOs do not yet have Bean Validation annotations, and the POST and PUT handlers do not use `@Valid`. Name validation is currently performed by the service/domain code.
-- Missing IDs, invalid names, duplicate names and attempts to deactivate occupied active locations raise `IllegalArgumentException` in the service/domain layer. There is no explicit HTTP exception mapping yet; clients should not assume dedicated 400, 404 or 409 responses for these cases.
+- Database constraint exceptions and missing required asset enums (`NullPointerException`) do not have dedicated handlers. The current advice is not a complete error-handling policy.
 - GET responses expose entities directly. Consistent response DTO usage across the API is still pending.
 - The controller compiles and the 29 isolated service test cases pass. HTTP routing, JSON serialization, response headers and persistence against a running database have not been verified by those tests. Controller and integration tests remain pending.
