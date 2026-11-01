@@ -58,4 +58,12 @@ public class LocationController {
         return ResponseEntity.ok().body(locationResponse);
     }
 
+    @PatchMapping(value = "/{id}/deactivate")
+    public ResponseEntity<Void> deactivateLocation(@PathVariable Long id) {
+
+        service.deactivateLocation(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }

@@ -66,7 +66,7 @@ Mock-based tests do not verify database query behavior, uniqueness constraints o
 
 ## HTTP Exposure
 
-`LocationController` now exposes listing all locations, listing active locations, lookup by ID, creation and update. Creation accepts `LocationRequest` and returns `LocationResponse` with a 201 response and a `Location` header. Update accepts the same request DTO and returns `LocationResponse` with status 200. Deactivation remains a service-only operation. See the [location API documentation](location-api.md) for routes and current HTTP-layer limitations.
+`LocationController` now exposes listing all locations, listing active locations, lookup by ID, creation, update and deactivation. Creation accepts `LocationRequest` and returns `LocationResponse` with a 201 response and a `Location` header. Update accepts the same request DTO and returns `LocationResponse` with status 200. Deactivation is exposed through `PATCH /locations/{id}/deactivate` and returns 204 with no response body. See the [location API documentation](location-api.md) for routes and current HTTP-layer limitations.
 
 ## Asset Creation and Location Assignment
 
