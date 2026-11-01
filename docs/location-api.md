@@ -53,4 +53,4 @@ The generated ID varies. The controller builds the `Location` header from the cu
 - Request DTOs do not yet have Bean Validation annotations, and the POST and PUT handlers do not use `@Valid`. Name validation is currently performed by the service/domain code.
 - Missing IDs, invalid names and duplicate names raise `IllegalArgumentException` in the service/domain layer. There is no explicit HTTP exception mapping yet; clients should not assume dedicated 400, 404 or 409 responses for these cases.
 - GET responses expose entities directly. Consistent response DTO usage across the API is still pending.
-- The controller compiles and the 27 isolated service test cases pass. HTTP routing, JSON serialization, response headers and persistence against a running database have not been verified by those tests. Controller and integration tests remain pending.
+- The controller compiles and the 29 isolated service test cases pass. HTTP routing, JSON serialization, response headers and persistence against a running database have not been verified by those tests. Controller and integration tests remain pending.

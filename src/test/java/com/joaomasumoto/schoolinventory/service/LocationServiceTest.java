@@ -18,12 +18,14 @@ class LocationServiceTest {
 
     LocationRepository locationRepository;
     LocationService locationService;
+    AssetRepository assetRepository;
 
 
     @BeforeEach
     void setUp() {
         locationRepository = Mockito.mock(LocationRepository.class);
-        locationService = new LocationService(locationRepository, Mockito.mock(AssetRepository.class));
+        assetRepository = Mockito.mock(AssetRepository.class);
+        locationService = new LocationService(locationRepository, assetRepository);
     }
 
     @Test
@@ -183,10 +185,11 @@ class LocationServiceTest {
     }
 
     @Test
-    void deactivateLocation_SetsActiveToFalse_WhenLocationExists() {
+    void deactivateLocation_SetsActiveToFalse_WhenLocationExistsAndHasNoAssets() {
         Location location = new Location("Room");
 
         Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+        Mockito.when(assetRepository.existsByLocationId(1L)).thenReturn(false);
 
         Assertions.assertTrue(location.getActive());
 
@@ -194,6 +197,20 @@ class LocationServiceTest {
 
         Assertions.assertFalse(location.getActive());
         Mockito.verify(locationRepository).save(location);
+        Mockito.verify(assetRepository).existsByLocationId(1L);
+    }
+
+    @Test
+    void deactivateLocation_ThrowsException_WhenLocationHasAssets() {
+        Location location = new Location("Room");
+
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+        Mockito.when(assetRepository.existsByLocationId(1L)).thenReturn(true);
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> locationService.deactivateLocation(1L));
+        Assertions.assertTrue(location.getActive());
+
+        Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
     }
 
     @Test
@@ -204,6 +221,22 @@ class LocationServiceTest {
 
         Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
     }
+
+    @Test
+    void deactivateLocation_DoesNothing_WhenLocationIsAlreadyInactive() {
+        Location location = new Location("Room");
+        location.deactivate();
+
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+
+        locationService.deactivateLocation(1L);
+
+        Assertions.assertFalse(location.getActive());
+
+        Mockito.verifyNoInteractions(assetRepository);
+        Mockito.verify(locationRepository, Mockito.never()).save(Mockito.any(Location.class));
+    }
+
 
     @Test
     void findAll_ReturnsAllLocations_WhenLocationsExist() {

@@ -72,7 +72,7 @@ The generated Spring context test also requires the database and environment var
 
 ## Unit Tests
 
-JUnit and Mockito tests cover location creation, lookup, updates, deactivation and listings. `LocationServiceTest` currently has 24 test executions, including parameterized invalid-name cases, with no empty test methods. Tests include the 50-character acceptance boundary, name normalization and lists containing inactive locations. `AssetServiceTest` adds three cases for active, missing and inactive locations (27 service test executions in total). Integration tests remain pending.
+JUnit and Mockito tests cover location creation, lookup, updates, deactivation and listings. `LocationServiceTest` currently has 26 test executions, including parameterized invalid-name cases, with no empty test methods. Tests include the 50-character acceptance boundary, name normalization, lists containing inactive locations, rejection of deactivation for occupied locations and no-op deactivation for already inactive locations. `AssetServiceTest` adds three cases for active, missing and inactive locations (29 service test executions in total). Integration tests remain pending.
 
 Run both isolated service test classes without starting Spring or connecting to PostgreSQL:
 

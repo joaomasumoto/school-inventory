@@ -33,7 +33,7 @@ The service currently has no explicit transaction covering an entire load-and-up
 
 ## Unit Tests in Progress
 
-`LocationServiceTest` uses JUnit Jupiter and a Mockito mock of `LocationRepository`. `@BeforeEach` creates a fresh mock and service instance for each execution. These tests exercise the real service logic without loading the Spring context or accessing a database.
+`LocationServiceTest` uses JUnit Jupiter and Mockito mocks of `LocationRepository` and `AssetRepository`. `@BeforeEach` creates fresh mocks and a service instance for each execution. These tests exercise the real service logic without loading the Spring context or accessing a database.
 
 Implemented scenarios:
 
@@ -48,7 +48,9 @@ Implemented scenarios:
 - A duplicate name raises `IllegalArgumentException`, preserves the original name and does not call `save` with any location.
 - A parameterized update test uses `@MethodSource` to reject null, empty, whitespace-only and 51-character names. Each case checks the exception, preservation of the original name and absence of a `save` call with any location.
 
-- Deactivation changes an existing location from active to inactive and verifies the save call.
+- Deactivation changes an existing location without assigned assets from active to inactive and verifies both the asset lookup and save call.
+- Deactivation rejects a location with assigned assets, preserves its active state and does not save it.
+- Deactivation of an already inactive location preserves its state without querying assets or saving again.
 - Deactivation throws `IllegalArgumentException` when the location does not exist and does not save any location.
 - `findAll` returns the complete repository list, including an inactive location, checks the returned size and handles an empty list.
 - `findAllActive` delegates to `findByActiveTrue`, returns its list and handles an empty list. These tests verify service delegation, not database filtering.
@@ -58,7 +60,7 @@ Implemented scenarios:
 
 Test names follow `methodName_ExpectedBehavior_Scenario`.
 
-The class currently contains 24 implemented test executions (including eight executions from two parameterized tests), with no empty test methods. All 24 passed in the latest isolated service test run. This does not imply exhaustive coverage of every behavior.
+The class currently contains 26 implemented test executions (including eight executions from two parameterized tests), with no empty test methods. All 26 passed in the latest isolated service test run. This does not imply exhaustive coverage of every behavior.
 
 Mock-based tests do not verify database query behavior, uniqueness constraints or transactions. Integration verification remains pending; the passing unit tests do not imply exhaustive coverage of all lifecycle rules.
 
@@ -74,4 +76,4 @@ Mock-based tests do not verify database query behavior, uniqueness constraints o
 
 `AssetRepository.existsByLocationId` supports the location deactivation guard. This query considers all assigned assets regardless of status. Already inactive locations return before this query and are not saved again. There is no explicit service transaction or locking for concurrent assignment/deactivation yet.
 
-`AssetServiceTest` has three passing cases: creation in an active location, rejection of a missing location and rejection of an inactive location. Together with the 24 location cases, the isolated suite has 27 passing executions. The new deactivation guard for occupied locations and the already-inactive early return do not yet have dedicated tests.
+`AssetServiceTest` has three passing cases: creation in an active location, rejection of a missing location and rejection of an inactive location. Together with the 26 location cases, the isolated suite has 29 passing executions. The deactivation guard for occupied locations and the already-inactive early return now have dedicated unit tests.
