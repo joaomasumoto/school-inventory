@@ -47,6 +47,17 @@ public class Asset {
 
     }
 
+    public Asset(String name, Location location, LocalDate entryDate, AcquisitionMethod acquisitionMethod, AssetStatus status, String notes, String assetNumber, String documentNumber) {
+        this.name = StringValidator.validateName(name, "Asset name", 50);
+        this.location = validateLocation(location);
+        this.entryDate = entryDate;
+        this.acquisitionMethod = Objects.requireNonNull(acquisitionMethod, "Acquisition method is required.");
+        this.status = Objects.requireNonNull(status, "Asset status is required.");
+        this.notes = notes;
+        this.assetNumber = normalizeAssetNumber(assetNumber);
+        this.documentNumber = documentNumber;
+    }
+
     public Asset(String name, AcquisitionMethod acquisitionMethod, AssetStatus status, Location location) {
         this.name = StringValidator.validateName(name, "Asset name", 50);
         this.acquisitionMethod = Objects.requireNonNull(acquisitionMethod, "Acquisition method is required.");
@@ -98,6 +109,19 @@ public class Asset {
 
         return location;
     }
+
+    private static String normalizeAssetNumber(String assetNumber) {
+        if (assetNumber == null) {
+            return null;
+        }
+        assetNumber = assetNumber.strip();
+        if (assetNumber.isBlank()) {
+             return null;
+            }
+       return  assetNumber;
+    }
+
+
 
 
 }

@@ -76,7 +76,11 @@ Mock-based tests do not verify database query behavior, uniqueness constraints o
 
 `AssetRepository.existsByLocationId` supports the location deactivation guard. This query considers all assigned assets regardless of status. Already inactive locations return before this query and are not saved again. There is no explicit service transaction or locking for concurrent assignment/deactivation yet.
 
-`AssetServiceTest` has three passing cases: creation in an active location, rejection of a missing location and rejection of an inactive location. Together with the 26 location cases, the isolated suite has 29 passing executions. The deactivation guard for occupied locations and the already-inactive early return now have dedicated unit tests.
+`AssetServiceTest` has eight executions: creation in an active location, rejection of a missing or inactive location, normalization of surrounding whitespace in asset numbers, rejection of duplicate numbers without saving, and three parameterized cases for null, empty and whitespace-only numbers. The latter verify that the saved number is null and no uniqueness query occurs. Together with the 26 location cases, the isolated suite has 34 executions. The deactivation guard for occupied locations and the already-inactive early return now have dedicated unit tests.
+
+## Asset Number Normalization and Uniqueness
+
+`createAsset(AssetRequest)` also accepts entry date, notes, asset number and document number. The entity normalizes asset numbers with `strip()` and converts blank values to null. The service checks `existsByAssetNumber` using the normalized number only when it is present; duplicates raise `BusinessConflictException` before saving. The existing unique database constraint remains the persistence safeguard, including concurrent inserts. Database constraint behavior is not verified by these mock-based tests. The original minimal creation overload remains available.
 
 ## Exception Classification
 
