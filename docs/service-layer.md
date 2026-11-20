@@ -76,11 +76,15 @@ Mock-based tests do not verify database query behavior, uniqueness constraints o
 
 `AssetRepository.existsByLocationId` supports the location deactivation guard. This query considers all assigned assets regardless of status. Already inactive locations return before this query and are not saved again. There is no explicit service transaction or locking for concurrent assignment/deactivation yet.
 
-`AssetServiceTest` has eight executions: creation in an active location, rejection of a missing or inactive location, normalization of surrounding whitespace in asset numbers, rejection of duplicate numbers without saving, and three parameterized cases for null, empty and whitespace-only numbers. The latter verify that the saved number is null and no uniqueness query occurs. Together with the 26 location cases, the isolated suite has 34 executions. The deactivation guard for occupied locations and the already-inactive early return now have dedicated unit tests.
+`AssetServiceTest` has 17 executions. Tests cover creation in an active location, rejection of missing or inactive locations, asset number whitespace normalization and duplicate rejection. Parameterized tests cover null, empty and whitespace-only values separately for asset numbers, document numbers and notes. The asset number cases also verify that no uniqueness query occurs.
+
+The `AssetRequest` creation tests verify that all supplied fields reach the saved entity, that all optional fields may be null, and that an unknown entry date remains null. Missing and inactive location tests currently call the original minimal overload; equivalent cases for `createAsset(AssetRequest)` remain pending. Document number and notes trimming around nonblank content is implemented but does not yet have dedicated tests.
+
+Together with the 26 location cases, the isolated suite has 43 executions. These mock-based tests do not verify persistence against a real database.
 
 ## Asset Number Normalization and Uniqueness
 
-`createAsset(AssetRequest)` also accepts entry date, notes, asset number and document number. The entity normalizes asset numbers with `strip()` and converts blank values to null. The service checks `existsByAssetNumber` using the normalized number only when it is present; duplicates raise `BusinessConflictException` before saving. The existing unique database constraint remains the persistence safeguard, including concurrent inserts. Database constraint behavior is not verified by these mock-based tests. The original minimal creation overload remains available.
+`createAsset(AssetRequest)` also accepts entry date, notes, asset number and document number. The entity normalizes `assetNumber`, `documentNumber` and `notes` with `strip()` and converts blank values to null. Each field-specific normalization method delegates to the private `stripToNull` helper in `Asset`. Entry dates remain nullable and are stored as supplied. Document numbers and notes do not require uniqueness checks. The service checks `existsByAssetNumber` using the normalized number only when it is present; duplicates raise `BusinessConflictException` before saving. The existing unique database constraint remains the persistence safeguard, including concurrent inserts. Database constraint behavior is not verified by these mock-based tests. The original minimal creation overload remains available.
 
 ## Exception Classification
 

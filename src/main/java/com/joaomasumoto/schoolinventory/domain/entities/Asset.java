@@ -53,9 +53,9 @@ public class Asset {
         this.entryDate = entryDate;
         this.acquisitionMethod = Objects.requireNonNull(acquisitionMethod, "Acquisition method is required.");
         this.status = Objects.requireNonNull(status, "Asset status is required.");
-        this.notes = notes;
+        this.notes = normalizeNotes(notes);
         this.assetNumber = normalizeAssetNumber(assetNumber);
-        this.documentNumber = documentNumber;
+        this.documentNumber = normalizeDocumentNumber(documentNumber);
     }
 
     public Asset(String name, AcquisitionMethod acquisitionMethod, AssetStatus status, Location location) {
@@ -110,17 +110,28 @@ public class Asset {
         return location;
     }
 
-    private static String normalizeAssetNumber(String assetNumber) {
-        if (assetNumber == null) {
+    private static String stripToNull(String value) {
+        if (value == null) {
             return null;
         }
-        assetNumber = assetNumber.strip();
-        if (assetNumber.isBlank()) {
+        value = value.strip();
+        if (value.isBlank()) {
              return null;
             }
-       return  assetNumber;
+       return value;
     }
 
+    private static String normalizeAssetNumber(String value) {
+        return stripToNull(value);
+    }
+
+    private static String normalizeDocumentNumber(String value) {
+        return stripToNull(value);
+    }
+
+    private static String normalizeNotes(String value) {
+        return stripToNull(value);
+    }
 
 
 

@@ -94,6 +94,57 @@ public class AssetServiceTest {
         Mockito.verify(assetRepository, Mockito.never()).existsByAssetNumber(Mockito.nullable(String.class));
     }
 
+
+    @ParameterizedTest
+    @MethodSource("nullableArguments")
+    void createAsset_SavesAssetWithoutDocumentNumber_WhenDocumentNumberIsNullOrBlank(String arg) {
+        Location location = new Location("Room");
+
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+        Mockito.when(assetRepository.save(Mockito.any(Asset.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AssetRequest assetRequest = new AssetRequest("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L, null, arg, LocalDate.now(), null);
+
+        Asset newAsset = assetService.createAsset(assetRequest);
+
+        Mockito.verify(assetRepository).save(newAsset);
+        assertNull(newAsset.getDocumentNumber());
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("nullableArguments")
+    void createAsset_SavesAssetWithoutNotes_WhenNotesIsNullOrBlank(String arg) {
+        Location location = new Location("Room");
+
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+        Mockito.when(assetRepository.save(Mockito.any(Asset.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AssetRequest assetRequest = new AssetRequest("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L, null, null, LocalDate.now(), arg);
+
+        Asset newAsset = assetService.createAsset(assetRequest);
+
+        Mockito.verify(assetRepository).save(newAsset);
+        assertNull(newAsset.getNotes());
+
+    }
+
+    @Test
+    void createAsset_SavesAssetWithoutEntryDate_WhenEntryDateIsNull() {
+        Location location = new Location("Room");
+
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+        Mockito.when(assetRepository.save(Mockito.any(Asset.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AssetRequest assetRequest = new AssetRequest("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L, null, null, null, null);
+
+        Asset newAsset = assetService.createAsset(assetRequest);
+
+        Mockito.verify(assetRepository).save(newAsset);
+        assertNull(newAsset.getEntryDate());
+
+    }
+
     @Test
     void createAsset_ThrowsBusinessConflictException_WhenAssetNumberIsAlreadyUsed() {
         Location location = new Location("Room");
@@ -127,5 +178,57 @@ public class AssetServiceTest {
         Assertions.assertThrows(BusinessConflictException.class, () -> assetService.createAsset("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L));
         Mockito.verify(assetRepository, Mockito.never()).save(Mockito.any(Asset.class));
     }
+
+    @Test
+    void createAsset_ShouldSaveAsset_WhenAllFieldsAreProvided() {
+        Location location = new Location("Room");
+        LocalDate date = LocalDate.of(2000, 1, 2);
+
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+        Mockito.when(assetRepository.save(Mockito.any(Asset.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AssetRequest assetRequest = new AssetRequest("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L, "2", "3", date, "notes");
+        Asset newAsset = assetService.createAsset(assetRequest);
+
+        assertNotNull(newAsset);
+
+        Mockito.verify(assetRepository).save(newAsset);
+        Mockito.verify(locationRepository).findById(1L);
+
+        assertSame(location, newAsset.getLocation());
+        assertEquals("Chair", newAsset.getName());
+        assertEquals(AcquisitionMethod.SEDUC, newAsset.getAcquisitionMethod());
+        assertEquals(AssetStatus.OPERATING, newAsset.getStatus());
+        assertEquals("2", newAsset.getAssetNumber());
+        assertEquals("3", newAsset.getDocumentNumber());
+        assertEquals(date, newAsset.getEntryDate());
+        assertEquals("notes", newAsset.getNotes());
+    }
+
+    @Test
+    void createAsset_ShouldSaveAsset_WhenOptionalFieldsAreNull() {
+        Location location = new Location("Room");
+
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+        Mockito.when(assetRepository.save(Mockito.any(Asset.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AssetRequest assetRequest = new AssetRequest("Chair", AcquisitionMethod.SEDUC, AssetStatus.OPERATING, 1L, null, null, null, null);
+        Asset newAsset = assetService.createAsset(assetRequest);
+
+        assertNotNull(newAsset);
+
+        Mockito.verify(assetRepository).save(newAsset);
+        Mockito.verify(locationRepository).findById(1L);
+
+        assertSame(location, newAsset.getLocation());
+        assertEquals("Chair", newAsset.getName());
+        assertEquals(AcquisitionMethod.SEDUC, newAsset.getAcquisitionMethod());
+        assertEquals(AssetStatus.OPERATING, newAsset.getStatus());
+        assertNull(newAsset.getAssetNumber());
+        assertNull(newAsset.getDocumentNumber());
+        assertNull(newAsset.getEntryDate());
+        assertNull(newAsset.getNotes());
+    }
+
 
 }
